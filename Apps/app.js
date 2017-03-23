@@ -4,11 +4,13 @@ import {
   Text, View, ListView,
   Navigator,
   TextInput,
+  Button,
 } from 'react-native';
 
 const reposURL = 'https://api.github.com/search/repositories';
 
 import RepoCell from './repoCell';
+import Settings from './settings';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -59,22 +61,44 @@ export default class App extends React.Component {
   }
 
   _renderScene = (route, navigator) => {
-    return (
-      <ListView
-        style={{paddingTop: 20}}
-        enableEmptySections={true}
-        dataSource={this.state.dataSource}
-        renderRow={this._renderRow}
-      />
-    );
+    switch(route.title) {
+      case 'Repos': 
+        return (
+          <ListView
+            style={{paddingTop: 20}}
+            enableEmptySections={true}
+            dataSource={this.state.dataSource}
+            renderRow={this._renderRow}
+          />
+        );
+      case 'Settings': 
+        return (
+          <Settings />
+        );
+      default: 
+        return null;
+    } 
   }
 
-  _renderSettingButton = () => {
-    return (
-      <View style={{flex: 1, justifyContent: 'center'}}>
-        <Text style={{fontSize: 24}}>Setting</Text>
-      </View>
-    );
+  _goToSettings = (navigator) => {
+    navigator.push({title: 'Settings'});
+  }
+
+  _renderSettingButton = (route, navigator) => {
+    switch(route.title) {
+      case 'Repos': 
+        return (
+          <View style={{flex: 1, justifyContent: 'center'}}>
+            <Button onPress={() => this._goToSettings(navigator)} title="Settings" />
+          </View>
+        );
+      case 'Settings': 
+        return (
+          <View style={{flex: 1, justifyContent: 'center'}}>
+            <Button onPress={() => navigator.pop()} title="Back" />
+          </View>
+        );
+    } 
   }
 
   _applySearch = (value) => {
@@ -111,7 +135,7 @@ export default class App extends React.Component {
             routeMapper={{
               LeftButton: this._renderSearchField,
               Title: () => null,
-              RightButton: this._renderSettingButton,
+              RightButton: (route, navigator,) => this._renderSettingButton(route, navigator),
             }}
           />
         }
