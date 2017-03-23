@@ -3,27 +3,53 @@ import {
   Text,
   Slider,
   View,
+  StyleSheet,
 } from 'react-native';
 
+import {actionCreators} from './settingRedux';
+import {connect} from 'react-redux';
+
 class Settings extends Component {
-  state = { minStars: 1 }
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      minStars: (this.props && this.props.minStars) || 1,
+    };
+  }
+
+  _updateMinStars = (minStars) => {
+    const {dispatch} = this.props;
+    this.setState({minStars});
+    dispatch(actionCreators.setMinStars(minStars));
+  }
+
   render() {
     return (
-      <View style={{flex: 1, flexDirection: 'row', paddingTop: 24}}>
-        <Text>Minimum Stars</Text>
+      <View style={{flex: 1, flexDirection: 'row', paddingTop: 24, justifyContent: 'space-between'}}>
+        <Text style={styles.paddedText}>Minimum Stars</Text>
         <Slider
-          style={{backgroundColor: 'red', width: 200}}
+          style={{flex: 1}}
           minimumValue={0}
           step={1}
+          value={this.props.minStars}
           maximumValue={100}
-          onValueChange={(minStars) => this.setState({minStars})} 
-         />
-        <Text>
-          {this.state.minStars && + this.state.minStars.toFixed(3)}
+          onValueChange={this._updateMinStars} 
+        />
+        <Text style={[styles.paddedText, {minWidth: 48, textAlign: 'right'}]}>
+          {this.state.minStars}
         </Text>
       </View>
     );
   }
 }
 
-export default Settings;
+const styles = StyleSheet.create({
+  paddedText: {padding: 8},
+});
+
+const mapStateToProps = (state) => ({
+  minStars: state.minStars,
+});
+
+export default connect(mapStateToProps)(Settings);

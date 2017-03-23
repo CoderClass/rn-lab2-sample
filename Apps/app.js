@@ -7,81 +7,24 @@ import {
   Button,
 } from 'react-native';
 
-const reposURL = 'https://api.github.com/search/repositories';
 
-import RepoCell from './repoCell';
 import Settings from './settings';
+import {Provider} from 'react-redux';
+import {createStore} from 'redux';
+import {settingReducer} from './settingRedux';
+import ReposTable from './reposTable';
+
+const store = createStore(settingReducer);
 
 export default class App extends React.Component {
-  constructor(props) {
-    super(props);
-
-    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-    this.state = {
-      dataSource: ds.cloneWithRows([]),
-    };
-
-  }
-  componentDidMount() {
-    // this.fetchData().done();
-    this.fetchLocal();
-  }
-
-  fetchLocal() {
-    json = require('../repositories.json');
-    this.setState({dataSource: this.state.dataSource.cloneWithRows(json.items)});
-  }
-
-  async searchRepos(params) {
-    let queryStringArr = [];
-    for(const key of Object.keys(params)) {
-      queryStringArr.push(`${key}=${params[key]}`);
-    }
-    const queryString = queryStringArr.join('&');
-    const url = `${reposURL}?${queryString}`;
-    const response = await fetch(url);
-    return response.json();
-  }
-
-  async fetchData(query = 'react') {
-    const json = await this.searchRepos({
-      q: query,
-      sort: 'stars',
-      desc: 'order',
-    });
-    items = json.items;
-    this.setState({dataSource: this.state.dataSource.cloneWithRows(items)});
-    console.log('items', items);
-  }
-
-  _renderRow = (rowData) => {
+  _renderScene = (route, navigator) => {
     return (
-      <RepoCell item={rowData} />
+      <route.component navigator={navigator}/>
     );
   }
 
-  _renderScene = (route, navigator) => {
-    switch(route.title) {
-      case 'Repos': 
-        return (
-          <ListView
-            style={{paddingTop: 20}}
-            enableEmptySections={true}
-            dataSource={this.state.dataSource}
-            renderRow={this._renderRow}
-          />
-        );
-      case 'Settings': 
-        return (
-          <Settings />
-        );
-      default: 
-        return null;
-    } 
-  }
-
   _goToSettings = (navigator) => {
-    navigator.push({title: 'Settings'});
+    navigator.push({title: 'Settings', component: Settings});
   }
 
   _renderSettingButton = (route, navigator) => {
@@ -124,22 +67,26 @@ export default class App extends React.Component {
   render() {
     const defaultRoute = {
       title: 'Repos',
+      component: ReposTable,
     };
     return (
-      <Navigator initialRoute={defaultRoute}
-        renderScene={this._renderScene}
-        style={{paddingTop: 40}}
-        navigationBar={
-          <Navigator.NavigationBar
-            style = {{flex: 1, flexDirection: 'row', backgroundColor: '#eee'}}
-            routeMapper={{
-              LeftButton: this._renderSearchField,
-              Title: () => null,
-              RightButton: (route, navigator,) => this._renderSettingButton(route, navigator),
-            }}
-          />
-        }
-      />
+      <Provider store={store}>
+        <Navigator 
+          initialRoute={defaultRoute}
+          renderScene={this._renderScene}
+          style={{paddingTop: 40}}
+          navigationBar={
+            <Navigator.NavigationBar
+              style = {{flex: 1, flexDirection: 'row', backgroundColor: '#eee'}}
+              routeMapper={{
+                LeftButton: this._renderSearchField,
+                Title: () => null,
+                RightButton: (route, navigator,) => this._renderSettingButton(route, navigator),
+              }}
+            />
+          }
+        />
+      </Provider>
     );
   }
 }
