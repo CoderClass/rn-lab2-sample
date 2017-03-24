@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { 
-  StyleSheet,
+  View,
+  Button,
+  TextInput,
   ListView,
 
  } from 'react-native';
@@ -8,6 +10,7 @@ import {
 const reposURL = 'https://api.github.com/search/repositories';
 import RepoCell from './repoCell';
 import {connect} from 'react-redux';
+import Settings from './settings';
 
 class ReposTable extends Component {
   constructor(props) {
@@ -21,7 +24,13 @@ class ReposTable extends Component {
 
   componentDidMount() {
     // this.fetchData().done();
+    alert('did mount')
     this.fetchLocal();
+
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.fetchData();
   }
 
   fetchLocal() {
@@ -44,7 +53,8 @@ class ReposTable extends Component {
     const json = await this.searchRepos({
       q: query,
       sort: 'stars',
-      desc: 'order',
+      order: 'desc',
+      stars: this.props.minStars,
     });
     const items = json.items;
     this.setState({dataSource: this.state.dataSource.cloneWithRows(items)});
@@ -57,15 +67,40 @@ class ReposTable extends Component {
     );
   }
 
+  _applySearch = (value) => {
+    console.log('searching for ' + value);
+    if (value.length == 0) {
+      this.fetchData('react');
+    } else {
+      this.fetchData(value);
+    }
+  }
+
+  _goToSettings = (navigator) => {
+    navigator.push({title: 'Settings', component: Settings});
+  }
 
   render() {
+    const {navigator} = this.props;
+
     return (
-      <ListView
-        style={{paddingTop: 20}}
-        enableEmptySections={true}
-        dataSource={this.state.dataSource}
-        renderRow={this._renderRow}
-      />
+      <View style={{flex: 1}}>
+        <View style={{flexDirection: 'row'}}>
+          <TextInput
+            style={{height: 40, flex: 1, padding: 8}} placeholder='Search... (e.g. react)'
+            onChangeText={(value) => this._applySearch(value)}
+          />
+          <View style={{justifyContent: 'center'}}>
+            <Button onPress={() => this._goToSettings(navigator)} title="Settings" />
+          </View>
+        </View>
+        <ListView
+          style={{paddingTop: 20}}
+          enableEmptySections={true}
+          dataSource={this.state.dataSource}
+          renderRow={this._renderRow}
+        />
+      </View>
     );
   }
 }

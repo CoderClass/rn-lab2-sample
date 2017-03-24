@@ -4,6 +4,7 @@ import {
   Slider,
   View,
   StyleSheet,
+  Button,
 } from 'react-native';
 
 import {actionCreators} from './settingRedux';
@@ -19,26 +20,40 @@ class Settings extends Component {
   }
 
   _updateMinStars = (minStars) => {
-    const {dispatch} = this.props;
     this.setState({minStars});
-    dispatch(actionCreators.setMinStars(minStars));
+  }
+
+  _save = () => {
+    const { dispatch, navigator } = this.props;
+    dispatch(actionCreators.setMinStars(this.state.minStars));
+    navigator.pop();
   }
 
   render() {
+    const {navigator} = this.props;
+    
     return (
-      <View style={{flex: 1, flexDirection: 'row', paddingTop: 24, justifyContent: 'space-between'}}>
-        <Text style={styles.paddedText}>Minimum Stars</Text>
-        <Slider
-          style={{flex: 1}}
-          minimumValue={0}
-          step={1}
-          value={this.props.minStars}
-          maximumValue={100}
-          onValueChange={this._updateMinStars} 
-        />
-        <Text style={[styles.paddedText, {minWidth: 48, textAlign: 'right'}]}>
-          {this.state.minStars}
-        </Text>
+      <View style={{flex: 1}}>
+        <View style={{flex: 1}}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            <Button title="Back" onPress={() => navigator.pop()} />
+            <Button title="Save" onPress={this._save} />
+          </View>
+          <View style={{flex: 1, flexDirection: 'row', paddingTop: 24, justifyContent: 'space-between'}}>
+            <Text style={styles.paddedText}>Minimum Stars</Text>
+            <Slider
+              style={{flex: 1}}
+              minimumValue={0}
+              step={1}
+              value={this.props.minStars}
+              maximumValue={10000}
+              onValueChange={this._updateMinStars} 
+            />
+            <Text style={[styles.paddedText, {minWidth: 48, textAlign: 'right'}]}>
+              {this.state.minStars}
+            </Text>
+          </View>
+        </View>
       </View>
     );
   }
